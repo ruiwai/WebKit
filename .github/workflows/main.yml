@@ -1,0 +1,9 @@
+name: CI
+on: [push]
+jobs:
+  build:
+    runs-on: macos-13
+    steps:
+    - uses: actions/checkout@v6
+    - name: Setup upterm session
+      uses: owenthereal/action-upterm@v2
