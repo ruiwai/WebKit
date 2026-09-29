@@ -2,8 +2,15 @@ name: CI
 on: 
   workflow_dispatch:
 jobs:
+
+
   build:
     runs-on: macos-14
+    permissions:
+      contents: write       # Required to push code, create tags, or cut releases
+      pull-requests: write  # Required to comment on, label, or merge PRs
+      issues: write         # Required to create or modify issues
+
     steps:
     - uses: actions/checkout@v6
     - name: Setup upterm session
