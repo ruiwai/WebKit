@@ -253,9 +253,12 @@ typedef NS_ENUM(NSInteger, AVExternalContentProtectionStatus) {
     AVExternalContentProtectionStatusInsufficient = 2,
 };
 #endif
+// The request-level selector is SPI, distinct from AVContentKey's public API.
+ALLOW_NEW_API_WITHOUT_GUARDS_BEGIN
 @interface AVContentKeyRequest (AVContentKeyRequest_PendingProtectionStatus)
 - (AVExternalContentProtectionStatus)externalContentProtectionStatus;
 @end
+ALLOW_NEW_API_WITHOUT_GUARDS_END
 #endif // HAVE(AVCONTENTKEYREQUEST_PENDING_PROTECTION_STATUS)
 
 #if HAVE(AVCONTENTKEYREQUEST_COMPATABILITIY_MODE)

@@ -1629,6 +1629,7 @@ void CDMInstanceSessionFairPlayStreamingAVFObjC::externalProtectionStatusDidChan
 }
 
 #if HAVE(AVCONTENTKEYREQUEST_PENDING_PROTECTION_STATUS)
+ALLOW_NEW_API_WITHOUT_GUARDS_BEGIN
 static std::optional<CDMKeyStatus> keyStatusForContentProtectionStatus(AVExternalContentProtectionStatus status)
 {
     switch (status) {
@@ -1643,11 +1644,13 @@ static std::optional<CDMKeyStatus> keyStatusForContentProtectionStatus(AVExterna
     ASSERT_NOT_REACHED();
     return std::nullopt;
 }
+ALLOW_NEW_API_WITHOUT_GUARDS_END
 #endif
 
 std::optional<CDMKeyStatus> CDMInstanceSessionFairPlayStreamingAVFObjC::protectionStatusForRequest(AVContentKeyRequest *request) const
 {
 #if HAVE(AVCONTENTKEYREQUEST_PENDING_PROTECTION_STATUS)
+ALLOW_NEW_API_WITHOUT_GUARDS_BEGIN
 
 #if HAVE(AVCONTENTKEY_EXTERNALCONTENTPROTECTIONSTATUS) && HAVE(AVCONTENTKEYSPECIFIER)
     AVContentKey *contentKey = request.contentKey;
@@ -1659,8 +1662,10 @@ std::optional<CDMKeyStatus> CDMInstanceSessionFairPlayStreamingAVFObjC::protecti
         return keyStatusForContentProtectionStatus([contentKey externalContentProtectionStatus]);
 #endif
 
-    return keyStatusForContentProtectionStatus([request externalContentProtectionStatus]);
-#else
+    if ([request respondsToSelector:@selector(externalContentProtectionStatus)])
+        return keyStatusForContentProtectionStatus([request externalContentProtectionStatus]);
+ALLOW_NEW_API_WITHOUT_GUARDS_END
+#endif
 
 #if HAVE(AVCONTENTKEYSESSIONWILLOUTPUTBEOBSCURED)
     // FIXME: AVFoundation requires a connection to the WindowServer in order to query the HDCP status of individual
@@ -1678,7 +1683,7 @@ std::optional<CDMKeyStatus> CDMInstanceSessionFairPlayStreamingAVFObjC::protecti
         }
 
         auto obscured = [request willOutputBeObscuredDueToInsufficientExternalProtectionForDisplays:@[ ]];
-        ALWAYS_LOG(LOGIDENTIFIER, "request { ", keyIDsForRequest(request), " } willOutputBeObscured...forDisplays:[ nil ] = ", obscured ? "true" : "false");
+        ALWAYS_LOG(LOGIDENTIFIER, "request { ", CDMPrivateFairPlayStreaming::keyIDsForRequest(request), " } willOutputBeObscured...forDisplays:[ nil ] = ", obscured ? "true" : "false");
         return obscured ? CDMKeyStatus::OutputRestricted : CDMKeyStatus::Usable;
     }
 #endif
@@ -1689,7 +1694,6 @@ std::optional<CDMKeyStatus> CDMInstanceSessionFairPlayStreamingAVFObjC::protecti
         return CDMKeyStatus::OutputRestricted;
 
     return std::nullopt;
-#endif // !HAVE(AVCONTENTKEYREQUEST_PENDING_PROTECTION_STATUS)
 };
 
 
