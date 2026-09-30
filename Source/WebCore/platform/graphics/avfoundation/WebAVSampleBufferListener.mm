@@ -60,8 +60,10 @@ static bool isSampleBufferVideoRenderer(id object)
         return true;
 
 #if HAVE(AVSAMPLEBUFFERVIDEORENDERER)
-    if (dynamic_objc_cast<AVSampleBufferVideoRenderer>(object, PAL::getAVSampleBufferVideoRendererClass()))
-        return true;
+    if (__builtin_available(macOS 14.0, iOS 17.0, tvOS 17.0, *)) {
+        if (dynamic_objc_cast<AVSampleBufferVideoRenderer>(object, PAL::getAVSampleBufferVideoRendererClass()))
+            return true;
+    }
 #endif
 
     return false;
@@ -125,9 +127,11 @@ static bool isSampleBufferVideoRenderer(id object)
     [renderer addObserver:self forKeyPath:errorKeyPath options:NSKeyValueObservingOptionNew context:errorContext];
     [renderer addObserver:self forKeyPath:outputObscuredDueToInsufficientExternalProtectionKeyPath options:NSKeyValueObservingOptionNew context:outputObscuredDueToInsufficientExternalProtectionContext];
     [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(layerFailedToDecode:) name:AVSampleBufferDisplayLayerFailedToDecodeNotification object:renderer];
-    [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(layerFailedToDecode:) name:AVSampleBufferVideoRendererDidFailToDecodeNotification object:renderer];
     [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(layerRequiresFlushToResumeDecodingChanged:) name:AVSampleBufferDisplayLayerRequiresFlushToResumeDecodingDidChangeNotification object:renderer];
-    [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(layerRequiresFlushToResumeDecodingChanged:) name:AVSampleBufferVideoRendererRequiresFlushToResumeDecodingDidChangeNotification object:renderer];
+    if (__builtin_available(macOS 14.0, iOS 17.0, tvOS 17.0, *)) {
+        [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(layerFailedToDecode:) name:AVSampleBufferVideoRendererDidFailToDecodeNotification object:renderer];
+        [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(layerRequiresFlushToResumeDecodingChanged:) name:AVSampleBufferVideoRendererRequiresFlushToResumeDecodingDidChangeNotification object:renderer];
+    }
 
 #if HAVE(AVSAMPLEBUFFERDISPLAYLAYER_READYFORDISPLAY)
     // FIXME (117934497): Remove staging code once -[AVSampleBufferDisplayLayer isReadyForDisplay] is available in SDKs used by WebKit builders
@@ -146,9 +150,11 @@ static bool isSampleBufferVideoRenderer(id object)
     _videoRenderers.remove(_videoRenderers.find(renderer));
 
     [NSNotificationCenter.defaultCenter removeObserver:self name:AVSampleBufferDisplayLayerFailedToDecodeNotification object:renderer];
-    [NSNotificationCenter.defaultCenter removeObserver:self name:AVSampleBufferVideoRendererDidFailToDecodeNotification object:renderer];
     [NSNotificationCenter.defaultCenter removeObserver:self name:AVSampleBufferDisplayLayerRequiresFlushToResumeDecodingDidChangeNotification object:renderer];
-    [NSNotificationCenter.defaultCenter removeObserver:self name:AVSampleBufferVideoRendererRequiresFlushToResumeDecodingDidChangeNotification object:renderer];
+    if (__builtin_available(macOS 14.0, iOS 17.0, tvOS 17.0, *)) {
+        [NSNotificationCenter.defaultCenter removeObserver:self name:AVSampleBufferVideoRendererDidFailToDecodeNotification object:renderer];
+        [NSNotificationCenter.defaultCenter removeObserver:self name:AVSampleBufferVideoRendererRequiresFlushToResumeDecodingDidChangeNotification object:renderer];
+    }
 #if HAVE(AVSAMPLEBUFFERDISPLAYLAYER_READYFORDISPLAY)
     // FIXME (117934497): Remove staging code once -[AVSampleBufferDisplayLayer isReadyForDisplay] is available in SDKs used by WebKit builders
     if (PAL::canLoad_AVFoundation_AVSampleBufferDisplayLayerReadyForDisplayDidChangeNotification())

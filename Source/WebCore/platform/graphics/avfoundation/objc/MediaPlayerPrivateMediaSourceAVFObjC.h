@@ -348,7 +348,9 @@ private:
     RefPtr<MediaSourcePrivateAVFObjC> m_mediaSourcePrivate;
     RetainPtr<AVAsset> m_asset;
     RetainPtr<AVSampleBufferDisplayLayer> m_sampleBufferDisplayLayer;
+ALLOW_NEW_API_WITHOUT_GUARDS_BEGIN
     RetainPtr<AVSampleBufferVideoRenderer> m_sampleBufferVideoRenderer;
+ALLOW_NEW_API_WITHOUT_GUARDS_END
 
     struct AudioRendererProperties {
         bool hasAudibleSample { false };

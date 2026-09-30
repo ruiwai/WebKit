@@ -328,7 +328,9 @@ private:
     RefPtr<VideoMediaSampleRenderer> m_expiringVideoRenderer;
 
     RetainPtr<AVSampleBufferDisplayLayer> m_sampleBufferDisplayLayer;
+ALLOW_NEW_API_WITHOUT_GUARDS_BEGIN
     RetainPtr<AVSampleBufferVideoRenderer> m_sampleBufferVideoRenderer;
+ALLOW_NEW_API_WITHOUT_GUARDS_END
     StdUnorderedMap<TrackID, RetainPtr<AVSampleBufferAudioRenderer>> m_audioRenderers;
     Ref<SourceBufferParserWebM> m_parser;
     const Ref<WTF::WorkQueue> m_appendQueue;
