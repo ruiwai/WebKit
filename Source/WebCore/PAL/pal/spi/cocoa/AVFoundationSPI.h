@@ -415,6 +415,17 @@ NS_ASSUME_NONNULL_END
 @end
 #endif // HAVE(BROWSER_ENGINE_SUPPORTING_API)
 
+// These SPI selectors predate the public AVVideoPerformanceMetrics API. New SDKs
+// mark them unavailable on that class, but older systems still require them.
+@protocol WebAVVideoPerformanceMetrics <NSObject>
+@property (nonatomic, readonly) unsigned long totalNumberOfVideoFrames;
+@property (nonatomic, readonly) unsigned long numberOfDroppedVideoFrames;
+@property (nonatomic, readonly) unsigned long numberOfCorruptedVideoFrames;
+@property (nonatomic, readonly) unsigned long numberOfDisplayCompositedVideoFrames;
+@property (nonatomic, readonly) unsigned long numberOfNonDisplayCompositedVideoFrames;
+@property (nonatomic, readonly) double totalFrameDelay;
+@end
+
 #if !USE(APPLE_INTERNAL_SDK) && HAVE(AVAUDIOSESSION) && !PLATFORM(MACCATALYST)
 #import <AVFoundation/AVAudioSession.h>
 

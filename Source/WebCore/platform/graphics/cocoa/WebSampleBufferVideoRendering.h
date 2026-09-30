@@ -32,7 +32,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)resetUpcomingSampleBufferPresentationTimeExpectations;
 - (nullable CVPixelBufferRef)copyDisplayedPixelBuffer;
 - (void)prerollDecodeWithCompletionHandler:(void (^)(BOOL success))block;
-- (nullable AVVideoPerformanceMetrics *)videoPerformanceMetrics;
+- (nullable AVVideoPerformanceMetrics *)videoPerformanceMetrics API_AVAILABLE(macos(14.4), ios(17.4), tvos(17.4), visionos(1.1));
 @property BOOL preventsAutomaticBackgroundingDuringVideoPlayback;
 @property BOOL preventsDisplaySleepDuringVideoPlayback;
 @property (readonly) BOOL requiresFlushToResumeDecoding;

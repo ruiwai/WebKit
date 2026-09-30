@@ -929,15 +929,18 @@ std::optional<VideoPlaybackQualityMetrics> MediaPlayerPrivateMediaSourceAVFObjC:
         };
     }
 
-    auto metrics = [layerOrVideoRenderer() videoPerformanceMetrics];
+    auto renderer = layerOrVideoRenderer();
+    if (![renderer respondsToSelector:@selector(videoPerformanceMetrics)])
+        return std::nullopt;
+ALLOW_NEW_API_WITHOUT_GUARDS_BEGIN
+    auto metrics = (id<WebAVVideoPerformanceMetrics>)[renderer videoPerformanceMetrics];
+ALLOW_NEW_API_WITHOUT_GUARDS_END
     if (!metrics)
         return std::nullopt;
 
     uint32_t displayCompositedFrames = 0;
-ALLOW_NEW_API_WITHOUT_GUARDS_BEGIN
     if ([metrics respondsToSelector:@selector(numberOfDisplayCompositedVideoFrames)])
         displayCompositedFrames = [metrics numberOfDisplayCompositedVideoFrames];
-ALLOW_NEW_API_WITHOUT_GUARDS_END
 
     return VideoPlaybackQualityMetrics {
         static_cast<uint32_t>([metrics totalNumberOfVideoFrames]),

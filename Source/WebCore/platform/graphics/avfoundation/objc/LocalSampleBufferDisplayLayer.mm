@@ -406,7 +406,10 @@ ALLOW_DEPRECATED_DECLARATIONS_END
 #if !RELEASE_LOG_DISABLED
     constexpr size_t frameCountPerLog = 1800; // log every minute at 30 fps
     if (!(m_frameRateMonitor.frameCount() % frameCountPerLog)) {
-        if (auto* metrics = [m_sampleBufferDisplayLayer videoPerformanceMetrics])
+        ALLOW_NEW_API_WITHOUT_GUARDS_BEGIN
+        auto metrics = [m_sampleBufferDisplayLayer respondsToSelector:@selector(videoPerformanceMetrics)] ? (id<WebAVVideoPerformanceMetrics>)[m_sampleBufferDisplayLayer videoPerformanceMetrics] : nil;
+        ALLOW_NEW_API_WITHOUT_GUARDS_END
+        if (metrics)
             RELEASE_LOG(WebRTC, "LocalSampleBufferDisplayLayer (%{public}s) metrics, total=%lu, dropped=%lu, corrupted=%lu, display-composited=%lu, non-display-composited=%lu (pending=%lu)", m_logIdentifier.utf8().data(), metrics.totalNumberOfVideoFrames, metrics.numberOfDroppedVideoFrames, metrics.numberOfCorruptedVideoFrames, metrics.numberOfDisplayCompositedVideoFrames, metrics.numberOfNonDisplayCompositedVideoFrames, m_pendingVideoFrameQueue.size());
     }
     m_frameRateMonitor.update();

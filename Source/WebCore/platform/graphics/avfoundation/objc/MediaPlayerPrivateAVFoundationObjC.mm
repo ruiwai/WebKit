@@ -3936,9 +3936,11 @@ std::optional<VideoPlaybackQualityMetrics> MediaPlayerPrivateAVFoundationObjC::v
 #if PLATFORM(WATCHOS)
     return std::nullopt;
 #else
+    if (![videoLayer respondsToSelector:@selector(videoPerformanceMetrics)])
+        return std::nullopt;
 ALLOW_NEW_API_WITHOUT_GUARDS_BEGIN
-
-    auto metrics = [videoLayer videoPerformanceMetrics];
+    auto metrics = (id<WebAVVideoPerformanceMetrics>)[videoLayer videoPerformanceMetrics];
+ALLOW_NEW_API_WITHOUT_GUARDS_END
     if (!metrics)
         return std::nullopt;
 
@@ -3949,8 +3951,6 @@ ALLOW_NEW_API_WITHOUT_GUARDS_BEGIN
         [metrics totalFrameDelay],
         static_cast<uint32_t>([metrics numberOfDisplayCompositedVideoFrames]),
     };
-
-ALLOW_NEW_API_WITHOUT_GUARDS_END
 #endif
 }
 
