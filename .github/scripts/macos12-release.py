@@ -176,7 +176,7 @@ def package(number):
         'sdk': run('xcrun', '--sdk', 'macosx', '--show-sdk-version'),
         'architecture': 'arm64', 'deployment_target': '12.0',
         'configuration': 'Release', 'c_cpp_optimization': '-O3',
-        'c_cpp_extra_warning_flags': '-Wno-error=unused-but-set-variable',
+        'c_cpp_extra_warning_flags': '-Wno-error=unused-but-set-variable -Wno-error=thread-safety-reference-return',
         'swift_optimization': '-O, wholemodule',
         'requested_lto_mode': (LOGS / 'lto-mode.txt').read_text().strip(),
         'lto_note': 'Project-specific deployment gates remain in force; not necessarily enabled for every target.',

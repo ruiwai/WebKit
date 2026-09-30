@@ -27,7 +27,7 @@ build() {
         ARCHS=arm64 ONLY_ACTIVE_ARCH=NO SDKROOT=macosx MACOSX_DEPLOYMENT_TARGET=12.0 \
         CODE_SIGNING_ALLOWED=YES CODE_SIGN_IDENTITY=- \
         GCC_OPTIMIZATION_LEVEL=3 "WK_LTO_MODE=$mode" \
-        'WARNING_CFLAGS=$(inherited) -Wno-error=unused-but-set-variable' \
+        'WARNING_CFLAGS=$(inherited) -Wno-error=unused-but-set-variable -Wno-error=thread-safety-reference-return' \
         SWIFT_OPTIMIZATION_LEVEL=-O SWIFT_COMPILATION_MODE=wholemodule \
         GCC_GENERATE_DEBUGGING_SYMBOLS=NO DEBUG_INFORMATION_FORMAT=dwarf \
         -jobs "$jobs" >> "$logs/build-$mode.log" 2>&1; then

@@ -73,8 +73,10 @@ Optimization policy:
   mode succeeds, nothing is released.
 - No fast-math/`-Ofast`, CPU-native tuning, PGO profile claims, or blanket disabling
   of availability diagnostics. New Clang's `unused-but-set-variable` diagnostic
-  (e.g. release-disabled logging) remains a warning rather than an error in CI;
-  other project diagnostics, including availability errors, remain in force.
+  (e.g. release-disabled logging) and `thread-safety-reference-return` in vendored
+  WebRTC headers remain visible warnings rather than errors in CI. This does not
+  repair or validate the third-party threading contracts. Other diagnostics,
+  including availability errors and other thread-safety checks, remain in force.
 - Two build jobs limit concurrent compiler memory use on hosted runners. LTO can
   still exhaust memory/disk or the five-hour build-step limit (within a six-hour
   job, leaving time to upload diagnostics). No optimal performance,
