@@ -116,16 +116,10 @@ void ProgressBarMac::draw(GraphicsContext& context, const FloatRoundedRect& bord
     bool isActive = style.states.contains(ControlStyle::State::WindowActive);
 
     auto coreUISizeForProgressBarSize = [](NSControlSize size) -> CFStringRef {
-        switch (size) {
-        case NSControlSizeMini:
-        case NSControlSizeSmall:
+        if (size == NSControlSizeMini || size == NSControlSizeSmall)
             return kCUISizeSmall;
-        case NSControlSizeRegular:
-        case NSControlSizeLarge:
-            return kCUISizeRegular;
-        }
-        ASSERT_NOT_REACHED();
-        return nullptr;
+        // CoreUI uses its regular progress-bar size for large and newer AppKit sizes too.
+        return kCUISizeRegular;
     };
 
     [[NSAppearance currentDrawingAppearance] _drawInRect:NSMakeRect(0, 0, inflatedRect.width(), inflatedRect.height()) context:cgContext options:@{

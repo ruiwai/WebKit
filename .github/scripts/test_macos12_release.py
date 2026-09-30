@@ -16,6 +16,34 @@ spec.loader.exec_module(release)
 
 
 class ReleaseTests(unittest.TestCase):
+    def test_progress_bar_size_mapping(self):
+        text = (release.ROOT / 'Source/WebCore/platform/graphics/mac/controls/ProgressBarMac.mm').read_text()
+        marker = 'auto coreUISizeForProgressBarSize = '
+        self.assertEqual(text.count(marker), 1)
+        mapping = text.split(marker, 1)[1].split('\n    };', 1)[0] + '\n};'
+        source = '''#import <AppKit/AppKit.h>
+static CFStringRef kCUISizeSmall = CFSTR("small");
+static CFStringRef kCUISizeRegular = CFSTR("regular");
+int main() {
+    auto mapping = ''' + mapping + '''
+    if (mapping(NSControlSizeMini) != kCUISizeSmall || mapping(NSControlSizeSmall) != kCUISizeSmall)
+        return 1;
+    if (mapping(NSControlSizeRegular) != kCUISizeRegular || mapping(NSControlSizeLarge) != kCUISizeRegular)
+        return 2;
+    if (mapping(static_cast<NSControlSize>(4)) != kCUISizeRegular || mapping(static_cast<NSControlSize>(99)) != kCUISizeRegular)
+        return 3;
+    return 0;
+}
+'''
+        with tempfile.TemporaryDirectory() as directory:
+            executable = str(Path(directory) / 'sizes')
+            result = subprocess.run(['xcrun', '--sdk', 'macosx', 'clang++', '-x', 'objective-c++',
+                                     '-std=c++20', '-Werror', '-mmacosx-version-min=12.0',
+                                     '-framework', 'AppKit', '-', '-o', executable],
+                                    input=source, capture_output=True, text=True, timeout=120)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            subprocess.run([executable], check=True, timeout=30)
+
     def test_current_version(self):
         text = (release.ROOT / 'Configurations/Version.xcconfig').read_text()
         number = release.version(text)

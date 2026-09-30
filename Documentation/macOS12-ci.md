@@ -63,6 +63,10 @@ modes. The attribute name and frame-conversion behavior are unchanged.
 `TinyLRUCache` scopes the C++23 `aligned_storage_t` deprecation in the same way
 as the branch's other raw-storage declarations, preserving its type/layout and
 keeping deprecation diagnostics active outside that declaration.
+The progress-bar CoreUI size mapping retains small/mini behavior and defaults to
+the existing regular size for regular/large or newer enum values (including the
+SDK's extra-large case). This is not a new extra-large control layout. A fixture
+executes the production mapping for the old sizes and representative new values.
 
 Optimization policy:
 
