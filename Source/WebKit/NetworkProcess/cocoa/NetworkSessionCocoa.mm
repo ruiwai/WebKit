@@ -2240,9 +2240,10 @@ void NetworkSessionCocoa::clearProxyConfigData()
 
     RetainPtr<NSMutableSet> contexts = adoptNS([[NSMutableSet alloc] init]);
     forEachSessionWrapper([&contexts] (SessionWrapper& sessionWrapper) {
-        if (!sessionWrapper.session)
+        if (![sessionWrapper.session respondsToSelector:@selector(_networkContext)])
             return;
-        [contexts.get() addObject:sessionWrapper.session.get()._networkContext];
+        if (auto context = sessionWrapper.session.get()._networkContext)
+            [contexts.get() addObject:context];
     });
 
     for (nw_context_t context in contexts.get())
@@ -2285,9 +2286,10 @@ void NetworkSessionCocoa::setProxyConfigData(const Vector<std::pair<Vector<uint8
 
     RetainPtr<NSMutableSet> contexts = adoptNS([[NSMutableSet alloc] init]);
     forEachSessionWrapper([&contexts] (SessionWrapper& sessionWrapper) {
-        if (!sessionWrapper.session)
+        if (![sessionWrapper.session respondsToSelector:@selector(_networkContext)])
             return;
-        [contexts.get() addObject:sessionWrapper.session.get()._networkContext];
+        if (auto context = sessionWrapper.session.get()._networkContext)
+            [contexts.get() addObject:context];
     });
 
     for (nw_context_t context in contexts.get()) {
@@ -2300,6 +2302,10 @@ void NetworkSessionCocoa::setProxyConfigData(const Vector<std::pair<Vector<uint8
 
 void NetworkSessionCocoa::applyProxyConfigurationToSessionConfiguration(NSURLSessionConfiguration *configuration)
 {
+    // The SDK may expose this property when the running CFNetwork does not, even for an empty proxy list.
+    if (![configuration respondsToSelector:@selector(setProxyConfigurations:)])
+        return;
+
     if (!m_nwProxyConfigs.isEmpty()) {
         RetainPtr nwProxyConfigurations = adoptNS([[NSMutableArray alloc] initWithCapacity:m_nwProxyConfigs.size()]);
         for (auto& proxyConfig : m_nwProxyConfigs)

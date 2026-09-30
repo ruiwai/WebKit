@@ -402,7 +402,7 @@ typedef NS_ENUM(NSInteger, NSURLSessionCompanionProxyPreference) {
 #if HAVE(APP_SSO)
 + (void)_disableAppSSO;
 #endif
-#if HAVE(SYSTEM_SUPPORT_FOR_ADVANCED_PRIVACY_PROTECTIONS)
+#if HAVE(SYSTEM_SUPPORT_FOR_ADVANCED_PRIVACY_PROTECTIONS) || HAVE(NW_PROXY_CONFIG)
 @property (readonly) nw_context_t _networkContext;
 #endif
 @end
