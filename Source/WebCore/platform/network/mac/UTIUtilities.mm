@@ -147,7 +147,11 @@ void setImageSourceAllowableTypes(const Vector<String>& supportedImageTypes)
 {
 #if HAVE(CGIMAGESOURCE_WITH_SET_ALLOWABLE_TYPES)
     auto allowableTypes = createNSArray(supportedImageTypes);
+    // This was available as SPI before becoming public API in macOS 14.2.
+    // Keep the ImageIO decoder allowlist active on older systems as well.
+ALLOW_NEW_API_WITHOUT_GUARDS_BEGIN
     CGImageSourceSetAllowableTypes((__bridge CFArrayRef)allowableTypes.get());
+ALLOW_NEW_API_WITHOUT_GUARDS_END
 #else
     UNUSED_PARAM(supportedImageTypes);
 #endif
