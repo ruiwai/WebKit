@@ -60,6 +60,9 @@ accessibility wrapper explicitly bridge to `NSString`: the newer SDK defines it
 as a CF string. The old-SDK fallback now uses the same CF string type rather than
 an Objective-C string literal, so the bridges are valid with both SDKs and ARC
 modes. The attribute name and frame-conversion behavior are unchanged.
+`TinyLRUCache` scopes the C++23 `aligned_storage_t` deprecation in the same way
+as the branch's other raw-storage declarations, preserving its type/layout and
+keeping deprecation diagnostics active outside that declaration.
 
 Optimization policy:
 

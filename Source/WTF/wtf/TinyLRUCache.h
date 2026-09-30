@@ -81,7 +81,9 @@ private:
     using Entry = std::pair<KeyType, ValueType>;
     Entry* cacheBuffer() { return reinterpret_cast_ptr<Entry*>(m_cacheBuffer); }
 
+    ALLOW_DEPRECATED_DECLARATIONS_BEGIN
     std::aligned_storage_t<sizeof(Entry), std::alignment_of_v<Entry>> m_cacheBuffer[capacity];
+    ALLOW_DEPRECATED_DECLARATIONS_END
     size_t m_size { 0 };
 };
 
