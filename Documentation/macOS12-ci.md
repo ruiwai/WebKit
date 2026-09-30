@@ -68,13 +68,16 @@ Optimization policy:
 - First attempt: `WK_LTO_MODE=thin`. The project's per-target/deployment LTO gates
   are retained; notably JavaScriptCore can disable LTO for a pre-13 target.
 - If that attempt fails, retry `-O3` with `WK_LTO_MODE=none`. Both logs are kept
-  and metadata identifies the successful mode. If both fail, nothing is released.
+  and metadata identifies the successful mode. Located source/header compiler
+  errors fail immediately: disabling LTO cannot fix those diagnostics. If neither
+  mode succeeds, nothing is released.
 - No fast-math/`-Ofast`, CPU-native tuning, PGO profile claims, or blanket disabling
   of availability diagnostics. New Clang's `unused-but-set-variable` diagnostic
   (e.g. release-disabled logging) remains a warning rather than an error in CI;
   other project diagnostics, including availability errors, remain in force.
 - Two build jobs limit concurrent compiler memory use on hosted runners. LTO can
-  still exhaust memory/disk or the six-hour job limit. No optimal performance,
+  still exhaust memory/disk or the five-hour build-step limit (within a six-hour
+  job, leaving time to upload diagnostics). No optimal performance,
   full-LTO success, or speedup over the tested manual build is claimed.
 
 ## Gates and artifacts

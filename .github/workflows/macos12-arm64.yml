@@ -55,6 +55,7 @@ jobs:
           python3 .github/scripts/macos12-release.py prepare
           git diff --binary > WebKitBuild/CI-logs/xcode26-project.patch
       - name: Build optimized arm64 (retry without LTO on failure)
+        timeout-minutes: 300
         run: bash .github/scripts/build-macos12-arm64.sh
       - name: Assemble and verify development package
         run: python3 .github/scripts/macos12-release.py package

@@ -38,7 +38,7 @@ class ReleaseTests(unittest.TestCase):
 
     def test_build_fallback_control_flow(self):
         # Mock commands verify ordering/failure propagation, not compiler behavior.
-        for failure in ('none', 'thin', 'all'):
+        for failure in ('none', 'thin', 'all', 'source'):
             with self.subTest(failure=failure), tempfile.TemporaryDirectory() as directory:
                 root = Path(directory)
                 fake = root / 'xcodebuild'
@@ -47,6 +47,9 @@ import json, os, sys
 with open(os.environ['XCODE_CALLS'], 'a') as stream:
     stream.write(json.dumps(sys.argv[1:]) + '\\n')
 mode = next(value for value in sys.argv if value.startswith('WK_LTO_MODE='))
+if os.environ['FAIL_MODE'] == 'source':
+    print("fixture.cpp:1:1: error: missing declaration")
+    sys.exit(1)
 sys.exit(1 if os.environ['FAIL_MODE'] == 'all' or mode == 'WK_LTO_MODE=' + os.environ['FAIL_MODE'] else 0)
 ''')
                 fake.chmod(0o755)
@@ -60,10 +63,10 @@ sys.exit(1 if os.environ['FAIL_MODE'] == 'all' or mode == 'WK_LTO_MODE=' + os.en
                                         cwd=root, env=environment, capture_output=True, text=True, timeout=30)
                 calls = [json.loads(line) for line in (root / 'calls').read_text().splitlines()]
                 mode_file = root / 'WebKitBuild/CI-logs/lto-mode.txt'
-                if failure == 'all':
+                if failure in ('all', 'source'):
                     self.assertNotEqual(result.returncode, 0)
                     self.assertFalse(mode_file.exists())
-                    self.assertEqual(len(calls), 2)
+                    self.assertEqual(len(calls), 1 if failure == 'source' else 2)
                 else:
                     self.assertEqual(result.returncode, 0, result.stderr)
                     self.assertEqual(mode_file.read_text().strip(), 'none' if failure == 'thin' else 'thin')

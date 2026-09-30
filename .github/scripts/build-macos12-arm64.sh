@@ -39,6 +39,12 @@ build() {
 mode=thin
 if ! build "$mode"; then
     tail -60 "$logs/build-$mode.log"
+    # Semantic/header errors are independent of LTO. Avoid rebuilding every
+    # prerequisite only to reproduce the same source diagnostic a second time.
+    if grep -Eq '^.+:[0-9]+:[0-9]+: (fatal )?error:' "$logs/build-$mode.log"; then
+        echo '::error::Source diagnostics cannot be fixed by disabling LTO; see build-thin.log.'
+        exit 1
+    fi
     echo '::warning::Optimized ThinLTO attempt failed; retrying -O3 without LTO. See both logs.'
     mode=none
     # Use the same build root: Xcode tracks the changed settings and recompiles
