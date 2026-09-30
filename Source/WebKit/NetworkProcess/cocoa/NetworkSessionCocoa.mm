@@ -1071,8 +1071,11 @@ ALLOW_DEPRECATED_DECLARATIONS_END
 // FIXME: Remove when rdar://108002223 can be resolved.
 - (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task _didReceiveInformationalResponse:(NSURLResponse *)response
 {
+    // Forward to our own implementation, which is present on older systems too.
+ALLOW_NEW_API_WITHOUT_GUARDS_BEGIN
     if ([response isKindOfClass:[NSHTTPURLResponse class]])
         [self URLSession:session task:task didReceiveInformationalResponse:(NSHTTPURLResponse *)response];
+ALLOW_NEW_API_WITHOUT_GUARDS_END
 }
 
 - (void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask didReceiveResponse:(NSURLResponse *)response completionHandler:(void (^)(NSURLSessionResponseDisposition disposition))completionHandler
