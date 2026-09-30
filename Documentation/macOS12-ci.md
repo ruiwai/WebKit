@@ -42,12 +42,14 @@ Frameworks-symlink build-phase invocation because Xcode 26 creates that link.
 The phase definition is left intact and normal Xcode 16 checkouts are unchanged.
 The exact adjustment is recorded in build metadata and uploaded logs.
 
-Xcode 26 also misses prerequisites previously inferred from aggregate targets'
-`Product Dependencies` copy phases. The build therefore explicitly completes the
-`WTF`, `libwebrtc`, and `JavaScriptCore` schemes before `Everything up to MiniBrowser`.
+Xcode 26 also misses prerequisites previously inferred from legacy targets'
+`Product Dependencies` copy phases, including native static libraries. The build
+therefore explicitly completes `bmalloc`, `WTF`, `libwebrtc`, `JavaScriptCore`,
+and `WebCore` before `Everything up to MiniBrowser`.
 They use the same build root/settings, so completed products are reused. This
-supplies the WTF generator scripts, libwebrtc headers and JSC generated headers
-before dependent source-generation phases run.
+supplies allocator headers, WTF generator scripts, libwebrtc/JSC generated headers
+and WebKitPlatform's WebCore headers before their consumers run. A cold hosted
+build is important: previously generated local headers can conceal missing edges.
 
 Optimization policy:
 

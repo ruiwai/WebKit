@@ -16,10 +16,10 @@ build() {
     local mode="$1"
     local scheme
     : > "$logs/build-$mode.log"
-    # Xcode 26 no longer infers all dependencies from the legacy aggregate
-    # targets' Product Dependencies copy phases. Populate their prerequisites
-    # explicitly (WTF scripts, libwebrtc headers, JSC generated headers).
-    for scheme in WTF libwebrtc JavaScriptCore 'Everything up to MiniBrowser'; do
+    # Xcode 26 no longer infers all dependencies from legacy Product Dependencies
+    # copy phases, including native static libraries. Populate allocator headers,
+    # WTF scripts, libwebrtc/JSC headers and WebKitPlatform's WebCore dependency.
+    for scheme in bmalloc WTF libwebrtc JavaScriptCore WebCore 'Everything up to MiniBrowser'; do
         printf '\n### Scheme: %s\n' "$scheme" >> "$logs/build-$mode.log"
         if ! xcodebuild -workspace WebKit.xcworkspace -scheme "$scheme" \
         -configuration Release -destination 'generic/platform=macOS' \

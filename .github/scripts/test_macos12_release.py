@@ -67,9 +67,9 @@ sys.exit(1 if os.environ['FAIL_MODE'] == 'all' or mode == 'WK_LTO_MODE=' + os.en
                 else:
                     self.assertEqual(result.returncode, 0, result.stderr)
                     self.assertEqual(mode_file.read_text().strip(), 'none' if failure == 'thin' else 'thin')
-                    successful = calls[-4:]
+                    successful = calls[-6:]
                     self.assertEqual([call[call.index('-scheme') + 1] for call in successful],
-                                     ['WTF', 'libwebrtc', 'JavaScriptCore', 'Everything up to MiniBrowser'])
+                                     ['bmalloc', 'WTF', 'libwebrtc', 'JavaScriptCore', 'WebCore', 'Everything up to MiniBrowser'])
                     for call in successful:
                         self.assertIn('GCC_OPTIMIZATION_LEVEL=3', call)
 
