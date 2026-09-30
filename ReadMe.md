@@ -45,6 +45,9 @@ For performance testing, and other purposes, use `--release` instead.
 
 See the [patch scope and validation record](Documentation/macOS12-back-deployment.md)
 for the individual compatibility changes, limitations, and remaining test work.
+An experimental [optimized arm64 CI/release workflow](Documentation/macOS12-ci.md)
+uses the `macos-26` runner with Xcode 26-specific build preparation; it does not
+replace the Xcode 16.2 manual-build validation below.
 
 Build on a newer macOS host with **Xcode 16.2**, using its public SDK and a
 **12.0 deployment target**. An old SDK is not required. Xcode 26 encountered
