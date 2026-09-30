@@ -51,6 +51,11 @@ supplies allocator headers, WTF generator scripts, libwebrtc/JSC generated heade
 and WebKitPlatform's WebCore headers before their consumers run. A cold hosted
 build is important: previously generated local headers can conceal missing edges.
 
+The source also removes an unnecessary `template` disambiguator from the
+non-dependent `CodePtr<CFunctionPtrTag>` call in `LLIntThunks.cpp`. New Clang
+rejects that keyword without a following template argument list; ordinary
+member-template deduction retains the existing default return type/behavior.
+
 Optimization policy:
 
 - Release, `arm64`, deployment target **12.0**, C/C++ **`-O3`**, Swift **`-O`** and
