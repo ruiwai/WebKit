@@ -55,6 +55,11 @@ The source also removes an unnecessary `template` disambiguator from the
 non-dependent `CodePtr<CFunctionPtrTag>` call in `LLIntThunks.cpp`. New Clang
 rejects that keyword without a following template argument list; ordinary
 member-template deduction retains the existing default return type/behavior.
+The two uses of `kAXConvertRelativeFrameParameterizedAttribute` in the macOS
+accessibility wrapper explicitly bridge to `NSString`: the newer SDK defines it
+as a CF string. The old-SDK fallback now uses the same CF string type rather than
+an Objective-C string literal, so the bridges are valid with both SDKs and ARC
+modes. The attribute name and frame-conversion behavior are unchanged.
 
 Optimization policy:
 

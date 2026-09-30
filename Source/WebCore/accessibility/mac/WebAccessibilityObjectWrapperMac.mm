@@ -489,7 +489,7 @@ static id parameterizedAttributeValueForTesting(const RefPtr<AXCoreObject>&, NSS
 #endif
 
 #ifndef kAXConvertRelativeFrameParameterizedAttribute
-#define kAXConvertRelativeFrameParameterizedAttribute @"AXConvertRelativeFrame"
+#define kAXConvertRelativeFrameParameterizedAttribute CFSTR("AXConvertRelativeFrame")
 #endif
 
 // Static C helper functions.
@@ -2612,7 +2612,7 @@ ALLOW_DEPRECATED_IMPLEMENTATIONS_END
 
     // The object that serves up the remote frame also is the one that does the frame conversion.
     if (backingObject->hasRemoteFrameChild())
-        return [paramAttrs arrayByAddingObject:kAXConvertRelativeFrameParameterizedAttribute];
+        return [paramAttrs arrayByAddingObject:(__bridge NSString *)kAXConvertRelativeFrameParameterizedAttribute];
 
     return paramAttrs;
 }
@@ -3784,7 +3784,7 @@ ALLOW_DEPRECATED_IMPLEMENTATIONS_END
         }
     }
 
-    if ([attribute isEqualToString:kAXConvertRelativeFrameParameterizedAttribute]) {
+    if ([attribute isEqualToString:(__bridge NSString *)kAXConvertRelativeFrameParameterizedAttribute]) {
         auto* parent = backingObject->parentObject();
         return parent ? [NSValue valueWithRect:parent->convertFrameToSpace(FloatRect(rect), AccessibilityConversionSpace::Page)] : nil;
     }
