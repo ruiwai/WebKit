@@ -277,7 +277,9 @@ static void appendFilesAsShareableURLs(RetainPtr<NSMutableArray>&& shareDataArra
 #if PLATFORM(IOS_FAMILY)
                 RetainPtr item = adoptNS([[WKShareSheetFileItemProvider alloc] initWithURL:fileURL]);
 #else
-                RetainPtr item = adoptNS([[NSPreviewRepresentingActivityItem alloc] initWithItem:fileURL linkMetadata:placeholderMetadataWithFileURL(fileURL).get()]);
+                RetainPtr<id> item = fileURL;
+                if (__builtin_available(macOS 13.0, *))
+                    item = adoptNS([[NSPreviewRepresentingActivityItem alloc] initWithItem:fileURL linkMetadata:placeholderMetadataWithFileURL(fileURL).get()]);
 #endif
                 if (!item) {
                     shareDataArray = nil;
@@ -310,7 +312,9 @@ static void appendFilesAsShareableURLs(RetainPtr<NSMutableArray>&& shareDataArra
 #if PLATFORM(IOS_FAMILY)
             auto item = adoptNS([[WKShareSheetURLItemProvider alloc] initWithURL:url title:title]);
 #else
-            auto item = adoptNS([[NSPreviewRepresentingActivityItem alloc] initWithItem:url linkMetadata:placeholderMetadataWithURLAndTitle(url, title).get()]);
+            RetainPtr<id> item = url;
+            if (__builtin_available(macOS 13.0, *))
+                item = adoptNS([[NSPreviewRepresentingActivityItem alloc] initWithItem:url linkMetadata:placeholderMetadataWithURLAndTitle(url, title).get()]);
 #endif
             if (item)
                 [shareDataArray addObject:item.get()];
