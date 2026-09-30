@@ -67,11 +67,13 @@ void PresentationContextIOSurface::renderBuffersWereRecreated(NSArray<IOSurface 
 {
     m_ioSurfaces = ioSurfaces;
 #if HAVE(IOSURFACE_SET_OWNERSHIP_IDENTITY) && HAVE(TASK_IDENTITY_TOKEN)
-    if (m_webProcessID) {
-        mach_port_t webProcessID = m_webProcessID->sendRight();
-        if (webProcessID) {
-            for (IOSurface *surface in ioSurfaces)
-                IOSurfaceSetOwnershipIdentity(bridge_cast(surface), webProcessID, kIOSurfaceMemoryLedgerTagGraphics, 0);
+    if (__builtin_available(macOS 14.4, iOS 17.4, watchOS 10.4, tvOS 17.4, *)) {
+        if (m_webProcessID) {
+            mach_port_t webProcessID = m_webProcessID->sendRight();
+            if (webProcessID) {
+                for (IOSurface *surface in ioSurfaces)
+                    IOSurfaceSetOwnershipIdentity(bridge_cast(surface), webProcessID, kIOSurfaceMemoryLedgerTagGraphics, 0);
+            }
         }
     }
 #endif
