@@ -613,7 +613,9 @@ IntSize AVVideoCaptureSource::maxPhotoSizeForCurrentPreset(IntSize requestedSize
 
     auto *format = [m_device activeFormat];
     if ([format respondsToSelector:@selector(supportedMaxPhotoDimensions)]) {
+        ALLOW_NEW_API_WITHOUT_GUARDS_BEGIN
         NSArray<NSValue*> *maxPhotoDimensions = format.supportedMaxPhotoDimensions;
+        ALLOW_NEW_API_WITHOUT_GUARDS_END
         if (!maxPhotoDimensions.count)
             return { };
 
@@ -665,8 +667,10 @@ RetainPtr<AVCapturePhotoSettings> AVVideoCaptureSource::photoConfiguration(const
 #endif
 
     requestedPhotoDimensions = maxPhotoSizeForCurrentPreset(requestedPhotoDimensions);
+ALLOW_NEW_API_WITHOUT_GUARDS_BEGIN
     if (!requestedPhotoDimensions.isEmpty() && [avPhotoSettings respondsToSelector:@selector(setMaxPhotoDimensions:)])
         [avPhotoSettings setMaxPhotoDimensions: { requestedPhotoDimensions.width(), requestedPhotoDimensions.height() }];
+ALLOW_NEW_API_WITHOUT_GUARDS_END
 
     return avPhotoSettings;
 }
@@ -700,6 +704,7 @@ auto AVVideoCaptureSource::takePhotoInternal(PhotoSettings&& photoSettings) -> R
     photoQueue().dispatch([this, protectedThis = Ref { *this }, avPhotoSettings = WTFMove(avPhotoSettings), photoOutput = WTFMove(photoOutput)] {
         ASSERT(!isMainThread());
 
+ALLOW_NEW_API_WITHOUT_GUARDS_BEGIN
         if ([avPhotoSettings respondsToSelector:@selector(setMaxPhotoDimensions:)]) {
             auto requestedPhotoDimensions = [avPhotoSettings maxPhotoDimensions];
             if (requestedPhotoDimensions.width && requestedPhotoDimensions.height) {
@@ -708,6 +713,7 @@ auto AVVideoCaptureSource::takePhotoInternal(PhotoSettings&& photoSettings) -> R
                     [photoOutput setMaxPhotoDimensions:requestedPhotoDimensions];
             }
         }
+ALLOW_NEW_API_WITHOUT_GUARDS_END
 
         [photoOutput capturePhotoWithSettings:avPhotoSettings.get() delegate:m_objcObserver.get()];
     });
