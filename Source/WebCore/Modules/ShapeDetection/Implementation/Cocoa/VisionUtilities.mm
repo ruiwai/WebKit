@@ -69,33 +69,37 @@ Vector<FloatPoint> convertCornerPoints(const FloatSize& imageSize, VNRectangleOb
 
 void configureRequestToUseCPUOrGPU(VNRequest *request)
 {
-#if USE(VISION_CPU_ONLY_PROPERTY)
-    request.usesCPUOnly = YES;
-#else
-    NSError *error = nil;
-    auto *supportedComputeStageDevices = [request supportedComputeStageDevicesAndReturnError:&error];
-    if (!supportedComputeStageDevices || error)
-        return;
+#if !USE(VISION_CPU_ONLY_PROPERTY)
+    if (__builtin_available(macOS 14.0, iOS 17.0, tvOS 17.0, *)) {
+        NSError *error = nil;
+        auto *supportedComputeStageDevices = [request supportedComputeStageDevicesAndReturnError:&error];
+        if (!supportedComputeStageDevices || error)
+            return;
 
-    for (VNComputeStage computeStage in supportedComputeStageDevices) {
-        bool set = false;
-        for (id<MLComputeDeviceProtocol> device in supportedComputeStageDevices[computeStage]) {
-            if ([device isKindOfClass:PAL::getMLGPUComputeDeviceClass()]) {
-                [request setComputeDevice:device forComputeStage:computeStage];
-                set = true;
-                break;
-            }
-        }
-        if (!set) {
+        for (VNComputeStage computeStage in supportedComputeStageDevices) {
+            bool set = false;
             for (id<MLComputeDeviceProtocol> device in supportedComputeStageDevices[computeStage]) {
                 if ([device isKindOfClass:PAL::getMLGPUComputeDeviceClass()]) {
                     [request setComputeDevice:device forComputeStage:computeStage];
+                    set = true;
                     break;
                 }
             }
+            if (!set) {
+                for (id<MLComputeDeviceProtocol> device in supportedComputeStageDevices[computeStage]) {
+                    if ([device isKindOfClass:PAL::getMLGPUComputeDeviceClass()]) {
+                        [request setComputeDevice:device forComputeStage:computeStage];
+                        break;
+                    }
+                }
+            }
         }
+        return;
     }
 #endif
+ALLOW_DEPRECATED_DECLARATIONS_BEGIN
+    request.usesCPUOnly = YES;
+ALLOW_DEPRECATED_DECLARATIONS_END
 }
 
 } // namespace WebCore::ShapeDetection
