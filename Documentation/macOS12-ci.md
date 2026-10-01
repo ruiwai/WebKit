@@ -70,6 +70,9 @@ SDK's extra-large case). This is not a new extra-large control layout. A fixture
 executes the production mapping for the old sizes and representative new values.
 `ContentExtensionActions.h` includes `<system_error>` directly for its public
 `std::error_code` declarations rather than relying on libc++ transitive includes.
+The legacy default navigation policy keeps its `NSNumber.intValue` as an `int`:
+it can contain both public navigation values and the private plug-in enum value.
+This avoids a cross-enum comparison without changing the numeric policy decision.
 
 Optimization policy:
 
