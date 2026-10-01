@@ -94,7 +94,7 @@
 
 #import <pal/cocoa/WritingToolsUISoftLink.h>
 
-static NSString * const kAXLoadCompleteNotification = @"AXLoadComplete";
+static NSString * const axLoadCompleteNotification = @"AXLoadComplete";
 
 @interface NSApplication (WebNSApplicationDetails)
 - (NSCursor *)_cursorRectCursor;
@@ -892,7 +892,7 @@ void PageClientImpl::didFinishNavigation(API::Navigation* navigation)
     if (auto gestureController = m_impl->gestureController())
         gestureController->didFinishNavigation(navigation);
 
-    NSAccessibilityPostNotification(NSAccessibilityUnignoredAncestor(m_view), kAXLoadCompleteNotification);
+    NSAccessibilityPostNotification(NSAccessibilityUnignoredAncestor(m_view), axLoadCompleteNotification);
 }
 
 void PageClientImpl::didFailNavigation(API::Navigation* navigation)
@@ -900,7 +900,7 @@ void PageClientImpl::didFailNavigation(API::Navigation* navigation)
     if (auto gestureController = m_impl->gestureController())
         gestureController->didFailNavigation(navigation);
 
-    NSAccessibilityPostNotification(NSAccessibilityUnignoredAncestor(m_view), kAXLoadCompleteNotification);
+    NSAccessibilityPostNotification(NSAccessibilityUnignoredAncestor(m_view), axLoadCompleteNotification);
 }
 
 void PageClientImpl::didSameDocumentNavigationForMainFrame(SameDocumentNavigationType type)
