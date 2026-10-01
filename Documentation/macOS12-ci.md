@@ -73,6 +73,13 @@ executes the production mapping for the old sizes and representative new values.
 The legacy default navigation policy keeps its `NSNumber.intValue` as an `int`:
 it can contain both public navigation values and the private plug-in enum value.
 This avoids a cross-enum comparison without changing the numeric policy decision.
+Only the `Class` hash-trait deleted-bucket comparison is specialized to bridge via
+CF pointers, avoiding an integer-to-`Class` cast rejected by newer ARC consumers
+of IPC allowed-class sets. Storage, ownership, sentinel representations and other
+pointer traits are unchanged. Fixtures execute nil/live/deleted comparisons in
+both ARC modes. Class-set copy/iteration is checked with new Clang and with MRC;
+old Clang's ARC rejects unrelated indirect-pointer casts in `HashTable`, so that
+combination checks only the comparisons, not general ARC class-set support.
 
 Optimization policy:
 

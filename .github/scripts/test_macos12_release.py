@@ -16,6 +16,53 @@ spec.loader.exec_module(release)
 
 
 class ReleaseTests(unittest.TestCase):
+    def test_objc_class_hash_traits(self):
+        source = '''#import <Foundation/Foundation.h>
+#include <wtf/Platform.h>
+#include <wtf/HashSet.h>
+// Older ARC rejects unrelated indirect-pointer casts in HashTable. Check the
+// new-compiler consumer, and check the deleted-value comparison on all versions.
+#if defined(CHECK_HASH_SET) && (!__has_feature(objc_arc) || __clang_major__ >= 17)
+void exercise(WTF::HashSet<Class>& classes, const WTF::HashSet<Class>& other) {
+    classes = other;
+    for (auto klass : classes)
+        (void)classes.contains(klass);
+}
+#endif
+int main() {
+    using Traits = WTF::HashTraits<Class>;
+    Class slot = [NSObject class];
+    if (Traits::isDeletedValue(slot))
+        return 1;
+    slot = (__bridge Class)reinterpret_cast<CFTypeRef>(-1);
+    if (!Traits::isDeletedValue(slot))
+        return 2;
+    slot = Nil;
+    if (Traits::isDeletedValue(slot) || Traits::emptyValue() != Nil)
+        return 3;
+    int integer = 0;
+    int* pointer = &integer;
+    if (WTF::HashTraits<int*>::isDeletedValue(pointer))
+        return 4;
+    WTF::HashTraits<int*>::constructDeletedValue(pointer);
+    if (!WTF::HashTraits<int*>::isDeletedValue(pointer))
+        return 5;
+    return 0;
+}
+'''
+        with tempfile.TemporaryDirectory() as directory:
+            executable = str(Path(directory) / 'class-traits')
+            for arc in ('-fobjc-arc', '-fno-objc-arc'):
+                command = ['xcrun', '--sdk', 'macosx', 'clang++', '-x', 'objective-c++',
+                           '-std=c++23', '-O3', '-DNDEBUG', '-Werror', arc,
+                           '-mmacosx-version-min=12.0', '-I', str(release.ROOT / 'Source/WTF')]
+                for arguments in (['-DCHECK_HASH_SET', '-fsyntax-only', '-'],
+                                  ['-framework', 'Foundation', '-', '-o', executable]):
+                    result = subprocess.run(command + arguments, input=source, capture_output=True,
+                                            text=True, timeout=120)
+                    self.assertEqual(result.returncode, 0, result.stderr)
+                subprocess.run([executable], check=True, timeout=30)
+
     def test_progress_bar_size_mapping(self):
         text = (release.ROOT / 'Source/WebCore/platform/graphics/mac/controls/ProgressBarMac.mm').read_text()
         marker = 'auto coreUISizeForProgressBarSize = '

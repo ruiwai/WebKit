@@ -136,6 +136,11 @@ template<typename P> struct HashTraits<P*> : GenericHashTraits<P*> {
 
 #ifdef __OBJC__
 
+template<> inline bool HashTraits<Class>::isDeletedValue(Class value)
+{
+    return (__bridge CFTypeRef)value == reinterpret_cast<CFTypeRef>(-1);
+}
+
 template<> struct HashTraits<__unsafe_unretained id> : GenericHashTraits<__unsafe_unretained id> {
     static constexpr bool emptyValueIsZero = true;
     static void constructDeletedValue(__unsafe_unretained id& slot) { slot = (__bridge __unsafe_unretained id)reinterpret_cast<CFTypeRef>(-1); }
