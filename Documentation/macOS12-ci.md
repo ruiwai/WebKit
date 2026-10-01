@@ -3,6 +3,16 @@
 Workflow: [macos12-arm64.yml](../.github/workflows/macos12-arm64.yml).
 This is separate from the existing manual upterm workflow.
 
+## Hosted validation record
+
+[Run 36823119408](https://github.com/ruiwai/WebKit/actions/runs/36823119408)
+completed all eight schemes at source commit `1357e554375649476b7e597515dcc01cdbd095c4`
+with the requested ThinLTO mode, without the no-LTO retry. It passed regression
+tests, the 23-binary package audit, native JavaScript/Wasm and WKWebView snapshot
+smokes on macOS 26.6.2, and the static audit after archive extraction. This is
+not a performance benchmark or Monterey runtime validation. The tag-triggered
+publication job repeats these gates rather than publishing an unchecked rebuild.
+
 ## Triggering and publishing
 
 - `workflow_dispatch` builds, tests and uploads downloadable Actions artifacts;
