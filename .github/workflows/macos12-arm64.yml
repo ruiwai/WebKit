@@ -66,6 +66,8 @@ jobs:
           export DYLD_FRAMEWORK_PATH="$root/Release" DYLD_LIBRARY_PATH="$root/Release"
           export __XPC_DYLD_FRAMEWORK_PATH="$root/Release" __XPC_DYLD_LIBRARY_PATH="$root/Release"
           "$root/Release/jsc" -e 'if (1 + 2 !== 3 || !WebAssembly.validate(new Uint8Array([0,97,115,109,1,0,0,0]))) throw new Error("JS/Wasm smoke failed"); print("PASS: JavaScript and Wasm validation");' 2>&1 | tee WebKitBuild/CI-logs/jsc-smoke.txt
+          "$root/Release/jsc" --useConcurrentJIT=false --thresholdForFTLOptimizeAfterWarmUp=100 --thresholdForFTLOptimizeSoon=100 --verifyGC=true JSTests/stress/store-barrier-transitive-phi-escape.js 2>&1 | tee WebKitBuild/CI-logs/phi-escape-ftl.txt
+          "$root/Release/jsc" --useConcurrentJIT=false --useFTLJIT=false --verifyGC=true JSTests/stress/store-barrier-transitive-phi-escape.js 2>&1 | tee WebKitBuild/CI-logs/phi-escape-dfg.txt
           "$root/RunMiniBrowser.command" --smoke-test 2>&1 | tee WebKitBuild/CI-logs/browser-smoke.txt
       - name: Archive and reverify after extraction
         run: python3 .github/scripts/macos12-release.py archive

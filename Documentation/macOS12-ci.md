@@ -20,15 +20,15 @@ publication job repeats these gates rather than publishing an unchecked rebuild.
 - Pushing `v<MAJOR.MINOR.TINY.MICRO.NANO>-macos12-arm64` runs the same build and,
   only on success, creates an experimental GitHub **prerelease**, not `latest`.
 - The tag must exactly match `Configurations/Version.xcconfig`. For this source
-  version the tag is `v619.1.26.31.6-macos12-arm64`.
+  version the tag is `v619.1.26.31.7-macos12-arm64`.
 - The workflow does not create/move tags or overwrite an existing release. Build
   fixes should use a new version/tag rather than silently replacing published assets.
 
 For example, after committing the source/workflow changes:
 
 ```sh
-git tag -a v619.1.26.31.6-macos12-arm64 -m 'Best-effort optimized macOS 12 arm64 build'
-git push --atomic origin webkit-619.1.x refs/tags/v619.1.26.31.6-macos12-arm64
+git tag -a v619.1.26.31.7-macos12-arm64 -m 'Backport CVE-2025-43529 for macOS 12 arm64'
+git push --atomic origin webkit-619.1.x refs/tags/v619.1.26.31.7-macos12-arm64
 ```
 
 Build permissions are read-only, checkout credentials are not retained, and the
@@ -119,7 +119,10 @@ Optimization policy:
 
 Before building, CI runs the deployment-boundary and proxy-selector regressions,
 plus tests for version/tag handling, the narrow graph adjustment and mocked
-optimization-fallback control flow. After a successful build it:
+optimization-fallback control flow. A compiled fixture also checks the production
+store-barrier escape helper and Phi traversal, including nested/cyclic inputs,
+fast-mode behavior, and a negative control using the old escape algorithm.
+After a successful build it:
 
 1. Compiles the arm64 browser smoke, assembles a relocatable package and embeds
    the helpers/Swift dylib with relative product-root aliases.
@@ -128,7 +131,10 @@ optimization-fallback control flow. After a successful build it:
 3. Checks all 23 Mach-O binaries (architecture/minimum OS, signatures, removed
    custom-deallocation imports), JIT entitlements, and contained valid links.
 4. Runs native `jsc` JavaScript/Wasm validation and the WKWebView local-HTML smoke
-   on **macOS 26**. Failure, including a missing usable graphical session, blocks release.
+   on **macOS 26**. It also runs the transitive-Phi-escape GC stress test with
+   FTL enabled and with FTL disabled (DFG-only optimization). Failure, including
+   a missing usable graphical session, blocks release. The stress test is not a
+   deterministic reproduction of the CVE's concurrent-GC race.
 5. Archives the package, extracts it to a fresh directory and repeats the static
    audit. Uploads the tarball, SHA-256, build metadata and verification summary.
 

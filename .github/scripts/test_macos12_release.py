@@ -16,6 +16,104 @@ spec.loader.exec_module(release)
 
 
 class ReleaseTests(unittest.TestCase):
+    def test_store_barrier_transitive_phi_escape(self):
+        # Compile the production escape helper and Phi traversal with a small
+        # graph fixture. This checks the algorithm, not the full JIT/GC pipeline.
+        dfg = release.ROOT / 'Source/JavaScriptCore/dfg'
+        phase = (dfg / 'DFGStoreBarrierInsertionPhase.cpp').read_text()
+        self.assertEqual(phase.count('auto escape ='), 1)
+        helper = phase.split('        auto escape =', 1)[1].split('\n        for (m_nodeIndex', 1)[0]
+        self.assertIn('escape(entry.value);', phase)
+        self.assertIn('for (auto* node : potentialStackEscapes.values())\n                escape(node);', phase)
+        self.assertNotIn('entry.value->setEpoch(Epoch());', phase)
+        phi = (dfg / 'DFGPhiChildren.h').read_text()
+        traversal = phi.split('    // This walks the Phi graph.\n', 1)[1].split('\nprivate:', 1)[0]
+        source = '''#include <unordered_set>
+#include <vector>
+#include <initializer_list>
+enum Operation { Value, Phi };
+struct Epoch { };
+struct Node {
+    Operation operation;
+    bool escaped = false;
+    std::vector<Node*> incoming;
+    Node(Operation operation, std::initializer_list<Node*> incoming = {})
+        : operation(operation), incoming(incoming) { }
+    Operation op() const { return operation; }
+    void setEpoch(Epoch) { escaped = true; }
+};
+template<typename T> struct HashSet {
+    struct Result { bool isNewEntry; };
+    std::unordered_set<T> values;
+    Result add(T value) { return { values.insert(value).second }; }
+};
+template<typename T> struct Vector : std::vector<T> {
+    void append(T value) { this->push_back(value); }
+    bool isEmpty() const { return this->empty(); }
+    T takeLast() { T value = this->back(); this->pop_back(); return value; }
+};
+struct PhiChildren {
+    template<typename F> void forAllIncomingValues(Node* node, const F& functor)
+    {
+        for (Node* incoming : node->incoming)
+            functor(incoming);
+    }
+''' + traversal + '''
+};
+struct Interpreter {
+    PhiChildren children;
+    PhiChildren* phiChildren() { return &children; }
+};
+enum class PhaseMode { Fast, Global };
+template<PhaseMode mode> void exercise(Node* node)
+{
+    Interpreter interpreter;
+    Interpreter* m_interpreter = mode == PhaseMode::Global ? &interpreter : nullptr;
+    auto escape =''' + helper + '''
+    escape(node);
+}
+int main()
+{
+    Node direct(Value);
+    exercise<PhaseMode::Global>(&direct);
+    if (!direct.escaped)
+        return 1;
+    Node a(Value), b(Value), untouched(Value);
+    Node inner(Phi, { &a, &b });
+    Node outer(Phi, { &inner, &a });
+    inner.incoming.push_back(&outer); // Cycles must terminate.
+    exercise<PhaseMode::Global>(&outer);
+    if (!a.escaped || !b.escaped || untouched.escaped)
+        return 2;
+    // Fast mode has no interpreter and must retain immediate-node behavior.
+    a.escaped = false;
+    b.escaped = false;
+    exercise<PhaseMode::Fast>(&outer);
+    if (!outer.escaped || a.escaped || b.escaped)
+        return 3;
+    Node fast(Value);
+    exercise<PhaseMode::Fast>(&fast);
+    return fast.escaped ? 0 : 4;
+}
+'''
+        with tempfile.TemporaryDirectory() as directory:
+            executable = str(Path(directory) / 'phi-escape')
+            command = ['xcrun', '--sdk', 'macosx', 'clang++', '-x', 'c++', '-std=c++20',
+                       '-O2', '-Wall', '-Wextra', '-Werror', '-', '-o', executable]
+            result = subprocess.run(command, input=source, capture_output=True, text=True, timeout=120)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            subprocess.run([executable], check=True, timeout=30)
+            # Negative control: the old immediate-node escape must fail this
+            # same fixture, without modifying the production source on disk.
+            old_source = source.replace('auto escape =' + helper,
+                                        'auto escape = [](Node* node) { node->setEpoch(Epoch()); };\n')
+            old_source = old_source.replace('Interpreter* m_interpreter =', '[[maybe_unused]] Interpreter* m_interpreter =')
+            self.assertNotEqual(source, old_source)
+            result = subprocess.run(command, input=old_source, capture_output=True, text=True, timeout=120)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            result = subprocess.run([executable], timeout=30)
+            self.assertEqual(result.returncode, 2)
+
     def test_objc_class_hash_traits(self):
         source = '''#import <Foundation/Foundation.h>
 #include <wtf/Platform.h>

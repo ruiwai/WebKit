@@ -44,6 +44,12 @@ this toolchain/optimization combination has not been certified on Monterey.
 See BUILD-METADATA.json for the exact source, SDK, settings and any LTO fallback.
 The project may disable LTO for individual targets even in the ThinLTO attempt.
 
+Custom version 619.1.26.31.7 backports CVE-2025-43529 from upstream WebKit
+commit b21a503b579a8ab14c839f82cc77176e507352e5. This is not a complete security
+update: known missing fixes include CVE-2024-44308 and CVE-2025-24201.
+Avoid untrusted browsing. CI includes algorithm and GC stress coverage, not a
+deterministic reproduction of the concurrent-GC vulnerability.
+
 Extract into a fresh directory, keep all relative links/frameworks/helpers, then:
 
     ./MacOS12-arm64/RunMiniBrowser.command --smoke-test
@@ -191,8 +197,10 @@ def package(number):
 
 
 def archive(number):
-    # The workflow reaches this only after both native smoke commands succeeded.
+    # The workflow reaches this only after all native smoke/stress commands succeeded.
     for name, marker in (('jsc-smoke.txt', 'PASS: JavaScript and Wasm validation'),
+                         ('phi-escape-ftl.txt', 'PASS: transitive Phi escape GC stress'),
+                         ('phi-escape-dfg.txt', 'PASS: transitive Phi escape GC stress'),
                          ('browser-smoke.txt', 'PASS: page snapshot')):
         if not (LOGS / name).is_file() or marker not in (LOGS / name).read_text():
             raise ValueError(f'Missing successful smoke log: {name}')
