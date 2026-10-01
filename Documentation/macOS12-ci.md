@@ -68,6 +68,8 @@ The progress-bar CoreUI size mapping retains small/mini behavior and defaults to
 the existing regular size for regular/large or newer enum values (including the
 SDK's extra-large case). This is not a new extra-large control layout. A fixture
 executes the production mapping for the old sizes and representative new values.
+`ContentExtensionActions.h` includes `<system_error>` directly for its public
+`std::error_code` declarations rather than relying on libc++ transitive includes.
 
 Optimization policy:
 
